@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="fr" data-lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes"/>
+  <meta name="description" content="MediaForge — Téléchargez, convertissez et éditez vos médias. YouTube, TikTok, Instagram, conversion vidéo/audio, GIF, sous-titres."/>
+  <meta name="theme-color" content="#050812"/>
+  <title>{% block title %}MediaForge{% endblock %}</title>
+
+  <link rel="manifest" href="/static/manifest.json"/>
+  <link rel="icon" type="image/png" href="/static/img/favicon.png"/>
+  <link rel="apple-touch-icon" href="/static/img/icon-192.png"/>
+  <link rel="stylesheet" href="/static/css/style.css"/>
+  <!-- Font Awesome 6 (gratuit) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  {% block head %}{% endblock %}
+</head>
+<body>
+<div class="wrapper">
+
+<!-- ═══════════ NAVBAR ═══════════ -->
+<nav>
+  <a href="/" class="nav-brand">
+    <img src="/static/img/logo.png" alt="MediaForge" class="nav-logo-img"/><strong>MediaForge</strong>
+  </a>
+
+  <div class="nav-center">
+    <a href="/" class="nav-link" data-i18n="nav_home">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>Accueil</span>
+    </a>
+    <a href="/convert" class="nav-link" data-i18n="nav_convert">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+      <span>Convertir</span>
+    </a>
+    <a href="/editor" class="nav-link" data-i18n="nav_editor">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+      <span>Éditeur MP3</span>
+    </a>
+    <a href="/subtitles" class="nav-link" data-i18n="nav_subtitles">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 15h4m4 0h2M7 11h2m4 0h4"/></svg>
+      <span>Sous-titres</span>
+    </a>
+    <a href="/gifmaker" class="nav-link" data-i18n="nav_gif">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="10" y1="15" x2="10" y2="9"/><line x1="14" y1="15" x2="14" y2="9"/><line x1="10" y1="9" x2="14" y2="9"/></svg>
+      <span>GIF Maker</span>
+    </a>
+    <a href="/history" class="nav-link" data-i18n="nav_history">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <span>Historique</span>
+      <span class="nav-badge">NEW</span>
+    </a>
+  </div>
+
+  <div class="nav-right">
+    <button class="btn-lang" id="btn-lang-nav" onclick="openSettings('lang')" title="Changer de langue">
+       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      <!-- emoji drapeau dynamique -->
+      <span id="lang-flag">🇫🇷</span>
+      <span class="lang-label" id="lang-label-nav">FR</span>
+    </button>
+    <button class="btn-settings" id="btn-settings" onclick="openSettings()" title="Paramètres">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
+    <button class="hamburger" id="hamburger" aria-label="Menu" onclick="toggleMobileMenu()">
+      <svg id="hamburger-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </div>
+</nav>
+
+<div class="mobile-menu" id="mobile-menu">
+  <div class="mobile-menu-links">
+    <a href="/" class="mobile-link" data-i18n="nav_home">
+      <i class="fas fa-home"></i>
+      <span>Accueil</span>
+    </a>
+    <a href="/convert" class="mobile-link" data-i18n="nav_convert">
+      <i class="fas fa-exchange-alt"></i>
+      <span>Convertir</span>
+    </a>
+    <a href="/editor" class="mobile-link" data-i18n="nav_editor">
+      <i class="fas fa-headphones"></i>
+      <span>Éditeur MP3</span>
+    </a>
+    <a href="/subtitles" class="mobile-link" data-i18n="nav_subtitles">
+      <i class="fas fa-closed-captioning"></i>
+      <span>Sous-titres</span>
+    </a>
+    <a href="/gifmaker" class="mobile-link" data-i18n="nav_gif">
+      <i class="fas fa-file-image"></i>
+      <span>GIF Maker</span>
+    </a>
+    <a href="/history" class="mobile-link" data-i18n="nav_history">
+      <i class="fas fa-history"></i>
+      <span>Historique</span>
+      <span class="nav-badge">NEW</span>
+    </a>
+  </div>
+
+  <div class="mobile-menu-bottom">
+    <button class="btn-lang" onclick="closeMobileMenu(); openSettings('lang');">
+       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      <span id="lang-label-mobile">FR</span>
+    </button>
+    <button class="btn-ghost btn-sm" onclick="closeMobileMenu(); openSettings();">
+      <i class="fas fa-cog"></i>
+      <span data-i18n="nav_settings">Paramètres</span>
+    </button>
+  </div>
+</div>
+
+<div class="settings-overlay" id="settings-overlay" onclick="closeSettings()"></div>
+
+<div class="settings-panel" id="settings-panel">
+  <div class="settings-header">
+    <div class="settings-title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <span data-i18n="settings_title">Paramètres</span>
+    </div>
+    <button class="btn-close" onclick="closeSettings()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+
+  <div class="settings-body">
+    <div class="settings-section" id="settings-lang-section">
+      <div class="settings-section-title" data-i18n="settings_lang">Langue / Language</div>
+      <div class="lang-grid">
+        <div class="lang-option active" data-lang="fr" onclick="setLang('fr')">🇫🇷 Français</div>
+        <div class="lang-option" data-lang="en" onclick="setLang('en')">🇬🇧 English</div>
+        <div class="lang-option" data-lang="es" onclick="setLang('es')">🇪🇸 Español</div>
+        <div class="lang-option" data-lang="ar" onclick="setLang('ar')">🇦🇪 العربية</div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-section-title" data-i18n="settings_download">Téléchargement</div>
+
+      <div class="settings-item">
+        <div class="settings-item-info">
+          <div class="settings-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></div>
+          <div>
+            <div class="settings-item-label" data-i18n="settings_quality">Qualité par défaut</div>
+            <div class="settings-item-sub" data-i18n="settings_quality_sub">Format vidéo prioritaire</div>
+          </div>
+        </div>
+        <select class="quality-select" id="setting-quality" onchange="saveSetting('quality',this.value)">
+          <option value="bestvideo+bestaudio">Maximale</option>
+          <option value="bestvideo[height<=1080]+bestaudio">1080p</option>
+          <option value="bestvideo[height<=720]+bestaudio">720p</option>
+          <option value="bestvideo[height<=480]+bestaudio">480p</option>
+        </select>
+      </div>
+
+      <div class="settings-item">
+        <div class="settings-item-info">
+          <div class="settings-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
+          <div>
+            <div class="settings-item-label" data-i18n="settings_audio_mp3">Forcer MP3</div>
+            <div class="settings-item-sub" data-i18n="settings_audio_mp3_sub">Convertir l'audio en MP3 192kbps</div>
+          </div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="setting-force-mp3" onchange="saveSetting('force_mp3',this.checked)"/><div class="toggle-track"></div></label>
+      </div>
+
+      <div class="settings-item">
+        <div class="settings-item-info">
+          <div class="settings-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
+          <div>
+            <div class="settings-item-label" data-i18n="settings_thumbnail">Miniature automatique</div>
+            <div class="settings-item-sub" data-i18n="settings_thumbnail_sub">Télécharger la thumbnail aussi</div>
+          </div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="setting-auto-thumb" onchange="saveSetting('auto_thumb',this.checked)"/><div class="toggle-track"></div></label>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-section-title" data-i18n="settings_ui">Interface</div>
+
+      <div class="settings-item">
+        <div class="settings-item-info">
+          <div class="settings-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></div>
+          <div>
+            <div class="settings-item-label" data-i18n="settings_animations">Animations</div>
+            <div class="settings-item-sub" data-i18n="settings_animations_sub">Effets visuels et transitions</div>
+          </div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="setting-animations" checked onchange="saveSetting('animations',this.checked); toggleAnimations(this.checked)"/><div class="toggle-track"></div></label>
+      </div>
+
+      <div class="settings-item">
+        <div class="settings-item-info">
+          <div class="settings-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg></div>
+          <div>
+            <div class="settings-item-label" data-i18n="settings_notifications">Notifications toast</div>
+            <div class="settings-item-sub" data-i18n="settings_notifications_sub">Alertes de succès et erreurs</div>
+          </div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="setting-toasts" checked onchange="saveSetting('toasts',this.checked)"/><div class="toggle-track"></div></label>
+      </div>
+
+      <!-- Nouveau toggle pour le thème -->
+      <div class="settings-item">
+        <div class="settings-item-info">
+          <div class="settings-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></div>
+          <div>
+            <div class="settings-item-label" data-i18n="settings_theme">Thème sombre / clair</div>
+            <div class="settings-item-sub" data-i18n="settings_theme_sub">Changer l'apparence</div>
+          </div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="setting-darkmode" onchange="toggleTheme(this.checked)"/><div class="toggle-track"></div></label>
+      </div>
+      
+      <!-- PWA : Installation et mise à jour -->
+<div class="settings-item" id="pwa-install-item">
+  <div class="settings-item-info">
+    <div class="settings-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg></div>
+    <div>
+      <div class="settings-item-label" data-i18n="settings_install">Application</div>
+      <div class="settings-item-sub" data-i18n="settings_install_sub">Installer ou ouvrir MediaForge</div>
+    </div>
+  </div>
+  <button class="btn btn-primary btn-sm" id="btn-install-app" style="min-width: 100px;">Installer</button>
+</div>
+
+<div class="settings-item" id="pwa-update-item" style="display: none;">
+  <div class="settings-item-info">
+    <div class="settings-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+    <div>
+      <div class="settings-item-label" data-i18n="settings_update">Mise à jour</div>
+      <div class="settings-item-sub" data-i18n="settings_update_sub">Nouvelle version disponible</div>
+    </div>
+  </div>
+  <button class="btn btn-primary btn-sm" id="btn-update-app" onclick="updateApp()">Mettre à jour</button>
+</div>
+
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-section-title" data-i18n="settings_about">À propos</div>
+      <div class="glass-card-sm" style="text-align:center;">
+        <img src="/static/img/logo.png" alt="MediaForge" style="height:55px;margin-bottom:0.7rem;"/>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;margin-bottom:0.3rem;">MediaForge</div>
+        <div style="font-size:0.75rem;color:var(--text-muted);">Version 2.0 — 2026</div>
+        <div style="font-size:0.73rem;color:var(--text-dim);margin-top:0.4rem;" data-i18n="settings_powered">Propulsé par yt-dlp & FFmpeg</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<main>
+  <div class="container">
+    {% block content %}{% endblock %}
+  </div>
+</main>
+
+<footer>
+  <p>
+    &copy; 2026 MediaForge — 
+    <span data-i18n="footer_version">Version 2.1</span> · 
+    <span data-i18n="footer_license">Licence MIT</span> · 
+    <a href="#" target="_blank" rel="noopener">GitHub</a><br>
+    <a href="/donate" data-i18n="footer_donate">Faire un don</a>
+  </p>
+</footer>
+
+<div id="toast-container"></div>
+</div>
+
+<script src="/static/js/main.js"></script>
+<!--
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js')
+    .then(reg => console.log('Service Worker enregistré (scope:', reg.scope, ')'))
+    .catch(err => console.error('Erreur SW:', err));
+}
+</script>
+-->
+{% block scripts %}{% endblock %}
+</body>
+</html>

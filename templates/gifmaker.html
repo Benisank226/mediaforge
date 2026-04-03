@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+{% block title %}GIF Maker — MediaForge{% endblock %}
+
+{% block content %}
+<section class="hero" style="padding:2rem 0 1.5rem;">
+  <h1 style="font-size:clamp(2rem,5vw,3.5rem);">GIF <span data-i18n="gif_maker">Maker</span></h1>
+  <p data-i18n="gif_desc_page">Crée des GIFs animés parfaits depuis n'importe quelle vidéo — palette optimisée FFmpeg</p>
+</section>
+
+<div class="glass-card anim-1">
+  <div class="dropzone" id="gif-drop">
+    <div class="dropzone-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="46" height="46"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="10" y1="15" x2="10" y2="9"/><line x1="14" y1="15" x2="14" y2="9"/><line x1="10" y1="9" x2="14" y2="9"/></svg></div>
+    <h3 data-i18n="gif_drop_title">Glisse ta vidéo ici</h3>
+    <p data-i18n="gif_drop_desc">MP4, MKV, AVI, MOV, WEBM…</p>
+    <input type="file" id="gif-file" accept="video/*" style="display:none"/>
+  </div>
+
+  <div id="gif-settings" style="display:none;">
+    <div class="divider"></div>
+    <h3 style="font-family:'Syne',sans-serif;font-weight:700;margin-bottom:1rem;font-size:1rem;"><span data-i18n="gif_params">Paramètres du GIF</span></h3>
+
+    <div class="grid-2">
+      <div class="field-group"><label class="field-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Début (secondes)</label><input type="number" class="field-input" id="gif-start" value="0" min="0" step="0.1" placeholder="0"/></div>
+      <div class="field-group"><label class="field-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Durée (secondes)</label><input type="number" class="field-input" id="gif-duration" value="5" min="1" max="30" step="0.5"/></div>
+      <div class="field-group"><label class="field-label">FPS : <span id="fps-val">10</span> fps</label><input type="range" id="gif-fps" min="5" max="30" value="10" oninput="document.getElementById('fps-val').textContent=this.value"/></div>
+      <div class="field-group"><label class="field-label">Largeur (px) : <span id="width-val">480</span>px</label><input type="range" id="gif-width" min="160" max="1080" value="480" step="40" oninput="document.getElementById('width-val').textContent=this.value"/></div>
+    </div>
+
+    <div class="glass-card-sm" style="background:rgba(255,215,0,0.07);border-color:rgba(255,215,0,0.2);margin-bottom:1.2rem;">
+      <div style="display:flex;flex-wrap:wrap;gap:1rem;font-size:0.82rem;color:var(--text-muted);">
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg> <strong style="color:var(--text-primary);" id="gif-fname">Aucun fichier</strong></span>
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="21" x2="9" y2="9"/></svg> <span id="gif-fsize">--</span></span>
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg> Palette optimisée 256 couleurs</span>
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="10" y1="15" x2="10" y2="9"/><line x1="14" y1="15" x2="14" y2="9"/><line x1="10" y1="9" x2="14" y2="9"/></svg> Algorithme palettegen FFmpeg</span>
+      </div>
+    </div>
+
+    <div id="gif-progress-wrap" style="display:none;margin-bottom:1rem;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:0.5rem;">
+        <div class="spinner"></div>
+        <span id="gif-status-text" style="font-size:0.87rem;color:var(--text-muted);" data-i18n="gif_generating">Génération du GIF…</span>
+      </div>
+      <div class="progress-bar-track"><div class="progress-bar-fill" id="gif-pb" style="width:30%"></div></div>
+    </div>
+
+    <div style="display:flex;gap:0.7rem;flex-wrap:wrap;">
+      <button class="btn btn-primary" id="btn-gif"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="10" y1="15" x2="10" y2="9"/><line x1="14" y1="15" x2="14" y2="9"/><line x1="10" y1="9" x2="14" y2="9"/></svg> <span data-i18n="btn_create_gif">Créer le GIF</span></button>
+      <a class="btn btn-success" id="gif-result-btn" style="display:none;" download="output.gif"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> <span data-i18n="btn_download_gif">Télécharger le GIF</span></a>
+      <button class="btn btn-ghost btn-sm" id="btn-cancel-gif" style="display:none;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> <span data-i18n="btn_cancel">Annuler</span></button>
+    </div>
+
+    <div id="gif-preview-wrap" style="display:none;margin-top:1.5rem;">
+      <div class="divider"></div>
+      <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:0.7rem;" data-i18n="preview">Aperçu :</p>
+      <img id="gif-preview-img" src="" alt="GIF preview" style="max-width:100%;border-radius:var(--radius-md);border:1px solid var(--glass-border);"/>
+    </div>
+  </div>
+</div>
+
+<div class="glass-card anim-2" style="margin-top:1.5rem;">
+  <h3 style="font-family:'Syne',sans-serif;font-size:0.95rem;font-weight:700;margin-bottom:0.8rem;"><span data-i18n="gif_tips_title">Conseils pour un GIF parfait</span></h3>
+  <div class="grid-3" style="font-size:0.82rem;color:var(--text-muted);">
+    <div class="glass-card-sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> <span data-i18n="tip_duration">⏱️ Durée idéale : 3 à 8 secondes pour un GIF fluide et léger</span></div>
+    <div class="glass-card-sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> <span data-i18n="tip_width">📐 Largeur recommandée : 480px pour web, 320px pour mobile</span></div>
+    <div class="glass-card-sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg> <span data-i18n="tip_palette">🎨 Palette 256 couleurs générée intelligemment par FFmpeg</span></div>
+    <div class="glass-card-sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg> <span data-i18n="tip_fps">🐢 FPS bas (8-12) = fichier léger. FPS élevé (20+) = animation fluide</span></div>
+    <div class="glass-card-sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polygon points="5 3 19 12 5 21 5 3"/></svg> <span data-i18n="tip_start">🔪 Commence précisément : note la seconde exacte de ta séquence préférée</span></div>
+    <div class="glass-card-sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M4 4v16h16"/><polygon points="8 20 12 16 4 8 4 20 8 20"/><path d="M18 14l-4-4-4 4"/></svg> <span data-i18n="tip_share">📱 Partage : compatible Discord, Telegram, WhatsApp, Twitter et plus</span></div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+let gifFileObj = null;
+let currentGifTask = null;
+
+socket.on('gif_progress', data => {
+  const statusEl = document.getElementById('gif-status-text');
+  const pb = document.getElementById('gif-pb');
+  if (data.status === 'generating_palette') {
+    if (statusEl) statusEl.textContent = '🎨 Génération de la palette de couleurs…';
+    if (pb) pb.style.width = '40%';
+  } else if (data.status === 'creating_gif') {
+    if (statusEl) statusEl.textContent = '🎞️ Création du GIF animé…';
+    if (pb) pb.style.width = '75%';
+  }
+});
+
+socket.on('gif_complete', data => {
+  const wrap = document.getElementById('gif-progress-wrap');
+  if (wrap) wrap.style.display = 'none';
+  const pb = document.getElementById('gif-pb');
+  if (pb) pb.style.width = '100%';
+  const btn = document.getElementById('gif-result-btn');
+  if (btn) { btn.style.display = 'inline-flex'; btn.href = data.download_url; }
+  document.getElementById('btn-cancel-gif').style.display = 'none';
+  const prevWrap = document.getElementById('gif-preview-wrap');
+  const prevImg = document.getElementById('gif-preview-img');
+  if (prevImg && data.download_url) {
+    prevImg.src = data.download_url;
+    if (prevWrap) prevWrap.style.display = 'block';
+  }
+  toast('GIF créé avec succès !', 'success');
+  History.add({ type:'gif', icon:'🎞️', name:'output.gif', url: data.download_url });
+});
+
+socket.on('gif_error', data => {
+  document.getElementById('gif-progress-wrap').style.display = 'none';
+  document.getElementById('btn-cancel-gif').style.display = 'none';
+  toast(`Erreur GIF : ${data.error?.slice(0,80)}`, 'error', 6000);
+});
+
+socket.on('gif_cancelled', data => {
+  toast('Génération du GIF annulée', 'info');
+  document.getElementById('gif-progress-wrap').style.display = 'none';
+  document.getElementById('btn-cancel-gif').style.display = 'none';
+});
+
+initDropzone(document.getElementById('gif-drop'), document.getElementById('gif-file'), file => {
+  gifFileObj = file;
+  document.getElementById('gif-settings').style.display = 'block';
+  document.getElementById('gif-fname').textContent = file.name;
+  document.getElementById('gif-fsize').textContent = formatSize(file.size);
+  toast('Vidéo chargée — configure tes paramètres', 'success');
+});
+
+document.getElementById('btn-gif').addEventListener('click', async () => {
+  if (!gifFileObj) { toast('Charge une vidéo d\'abord', 'warning'); return; }
+  const start = document.getElementById('gif-start').value;
+  const duration = document.getElementById('gif-duration').value;
+  const fps = document.getElementById('gif-fps').value;
+  const width = document.getElementById('gif-width').value;
+
+  if (parseInt(duration) > 30) { toast('Durée max : 30 secondes', 'warning'); return; }
+
+  const wrap = document.getElementById('gif-progress-wrap');
+  if (wrap) wrap.style.display = 'block';
+  document.getElementById('gif-result-btn').style.display = 'none';
+  document.getElementById('gif-preview-wrap').style.display = 'none';
+  document.getElementById('btn-cancel-gif').style.display = 'inline-flex';
+
+  const fd = new FormData();
+  fd.append('file', gifFileObj);
+  fd.append('start', start);
+  fd.append('duration', duration);
+  fd.append('fps', fps);
+  fd.append('width', width);
+
+  try {
+    const res = await fetch('/api/gif', { method:'POST', body: fd });
+    const data = await res.json();
+    currentGifTask = data.task_id;
+    toast(`GIF en cours de création (tâche ${data.task_id.slice(0,8)}…)`, 'info');
+  } catch(e) {
+    toast('Erreur : ' + e.message, 'error');
+    if (wrap) wrap.style.display = 'none';
+    document.getElementById('btn-cancel-gif').style.display = 'none';
+  }
+});
+
+document.getElementById('btn-cancel-gif').addEventListener('click', async () => {
+  if (currentGifTask) {
+    await fetch(`/api/cancel/gif/${currentGifTask}`, { method:'POST' });
+    currentGifTask = null;
+  }
+});
+</script>
+{% endblock %}

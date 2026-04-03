@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}Historique — MediaForge{% endblock %}
+
+{% block content %}
+<section class="hero" style="padding:2rem 0 1.5rem;">
+  <h1 style="font-size:clamp(2rem,5vw,3.5rem);"><span data-i18n="history_title">Mon</span> <span data-i18n="history_title_span">Historique</span></h1>
+  <p data-i18n="history_sub">Retrouve tous tes téléchargements et conversions récents</p>
+</section>
+
+<div class="glass-card anim-1">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;flex-wrap:wrap;gap:0.7rem;">
+    <div>
+      <h3 style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;"><span data-i18n="recent_activity">Activité récente</span></h3>
+      <p style="font-size:0.78rem;color:var(--text-muted);margin-top:2px;" id="history-count"><span data-i18n="loading">Chargement…</span></p>
+    </div>
+    <div style="display:flex;gap:0.5rem;">
+      <button class="btn btn-ghost btn-sm" id="btn-export"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> <span data-i18n="export_json">Exporter JSON</span></button>
+      <button class="btn btn-danger btn-sm" id="btn-clear-history"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg> <span data-i18n="clear_all">Tout effacer</span></button>
+    </div>
+  </div>
+
+  <div class="tabs" style="margin-bottom:1rem;">
+    <button class="tab-btn active" data-filter="all"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Tout</button>
+    <button class="tab-btn" data-filter="download"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Téléchargements</button>
+    <button class="tab-btn" data-filter="convert"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg> Conversions</button>
+    <button class="tab-btn" data-filter="gif"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="10" y1="15" x2="10" y2="9"/><line x1="14" y1="15" x2="14" y2="9"/><line x1="10" y1="9" x2="14" y2="9"/></svg> GIFs</button>
+    <button class="tab-btn" data-filter="subtitle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 15h4m4 0h2M7 11h2m4 0h4"/></svg> Sous-titres</button>
+  </div>
+
+  <div id="history-container"></div>
+</div>
+
+<div class="glass-card anim-2" style="margin-top:1.5rem;">
+  <h3 style="font-family:'Syne',sans-serif;font-weight:700;margin-bottom:1rem;font-size:1rem;"><span data-i18n="stats_title">Statistiques</span></h3>
+  <div class="stats-row" id="stats-row">
+    <div class="stat-box"><div class="stat-value" id="stat-total">0</div><div class="stat-label" data-i18n="total_ops">Opérations totales</div></div>
+    <div class="stat-box"><div class="stat-value" id="stat-dl">0</div><div class="stat-label" data-i18n="total_dl">Téléchargements</div></div>
+    <div class="stat-box"><div class="stat-value" id="stat-cv">0</div><div class="stat-label" data-i18n="total_conv">Conversions</div></div>
+    <div class="stat-box"><div class="stat-value" id="stat-gif">0</div><div class="stat-label" data-i18n="total_gif">GIFs créés</div></div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentFilter = 'all';
+let allHistory = [];
+
+function renderHistory(filter = 'all') {
+  const container = document.getElementById('history-container');
+  const items = filter === 'all' ? allHistory : allHistory.filter(h => h.type === filter);
+
+  if (!items.length) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="40" height="40"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg></div>
+        <h3>Aucun élément ${filter !== 'all' ? 'dans cette catégorie' : 'dans l\'historique'}</h3>
+        <p>Tes activités MediaForge apparaîtront ici automatiquement</p>
+        <a href="/" class="btn btn-primary btn-sm" style="margin-top:1rem;">🏠 Retour à l'accueil</a>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = `<div class="history-list">${items.map(item => `
+    <div class="history-item">
+      <div class="history-type" style="background:rgba(108,99,255,0.15)">${item.icon || '📁'}</div>
+      <div class="history-info">
+        <div class="history-name">${escapeHtml(item.name) || 'Fichier sans nom'}</div>
+        <div class="history-date">${formatDate(item.date)}</div>
+      </div>
+      <div class="history-actions">
+        ${item.url ? `<a href="${item.url}" download class="btn btn-success btn-sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></a>` : ''}
+        <span class="badge ${typeBadge(item.type)}">${typeLabel(item.type)}</span>
+      </div>
+    </div>
+  `).join('')}</div>`;
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/[&<>]/g, function(m) {
+    if (m === '&') return '&amp;';
+    if (m === '<') return '&lt;';
+    if (m === '>') return '&gt;';
+    return m;
+  });
+}
+
+function typeBadge(type) {
+  const map = { download:'badge-cyan', convert:'badge-purple', gif:'badge-green', subtitle:'badge-pink', thumbnail:'badge-cyan' };
+  return map[type] || 'badge-purple';
+}
+
+function typeLabel(type) {
+  const map = { download:'📥 DL', convert:'🔄 Conv.', gif:'🎞️ GIF', subtitle:'📝 Sub', thumbnail:'🖼️ Thumb' };
+  return map[type] || type;
+}
+
+function formatDate(iso) {
+  if (!iso) return '--';
+  const d = new Date(iso);
+  return d.toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+
+function updateStats() {
+  document.getElementById('stat-total').textContent = allHistory.length;
+  document.getElementById('stat-dl').textContent = allHistory.filter(h => h.type === 'download').length;
+  document.getElementById('stat-cv').textContent = allHistory.filter(h => h.type === 'convert').length;
+  document.getElementById('stat-gif').textContent = allHistory.filter(h => h.type === 'gif').length;
+}
+
+// INIT
+allHistory = History.get();
+document.getElementById('history-count').textContent = `${allHistory.length} élément${allHistory.length !== 1 ? 's' : ''}`;
+renderHistory();
+updateStats();
+
+// FILTER TABS
+document.querySelectorAll('[data-filter]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-filter]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = btn.dataset.filter;
+    renderHistory(currentFilter);
+  });
+});
+
+// CLEAR
+document.getElementById('btn-clear-history').addEventListener('click', () => {
+  if (!confirm('Effacer tout l\'historique ?')) return;
+  History.clear();
+  allHistory = [];
+  document.getElementById('history-count').textContent = '0 élément';
+  renderHistory();
+  updateStats();
+  toast('Historique effacé', 'info');
+});
+
+// EXPORT
+document.getElementById('btn-export').addEventListener('click', () => {
+  const json = JSON.stringify(allHistory, null, 2);
+  const blob = new Blob([json], { type:'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'mediaforge_history.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  toast('Historique exporté', 'success');
+});
+</script>
+{% endblock %}

@@ -1,0 +1,43 @@
+{
+  "name": "MediaForge",
+  "short_name": "MediaForge",
+  "description": "Téléchargeur & Convertisseur multimédia professionnel",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "background_color": "#050812",
+  "theme_color": "#6c63ff",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/static/img/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/img/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["utilities", "productivity"],
+  "lang": "fr",
+  "shortcuts": [
+    {
+      "name": "Télécharger",
+      "url": "/",
+      "description": "Télécharger une vidéo"
+    },
+    {
+      "name": "Convertir",
+      "url": "/convert",
+      "description": "Convertir un fichier"
+    },
+    {
+      "name": "GIF Maker",
+      "url": "/gifmaker",
+      "description": "Créer un GIF"
+    }
+  ]
+}

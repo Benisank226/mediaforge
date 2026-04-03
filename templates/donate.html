@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Soutenir MediaForge — Donations{% endblock %}
+
+{% block content %}
+<section class="hero" style="padding:2rem 0 1.5rem;">
+  <h1 style="font-size:clamp(2rem,5vw,3.5rem);"><span data-i18n="donate_title">Soutenir</span> <span data-i18n="donate_title_span">MediaForge</span></h1>
+  <p data-i18n="donate_sub">Votre soutien permet d’améliorer l’application, d’ajouter de nouvelles fonctionnalités et de maintenir les serveurs.</p>
+</section>
+
+<div class="glass-card anim-1">
+  <div class="donate-options">
+    <!-- PayPal (actif) -->
+<div class="donate-option">
+  <div class="donate-icon">
+    <i class="fab fa-paypal fa-3x"></i>
+  </div>
+  <h3>PayPal</h3>
+  <p data-i18n="donate_paypal_desc">Paiement sécurisé par carte ou compte PayPal.</p>
+  <div>
+    <style>.pp-btn{text-align:center;border:none;border-radius:0.25rem;min-width:11.625rem;padding:0 2rem;height:2.625rem;font-weight:bold;background-color:#FFD140;color:#000000;font-family:"Helvetica Neue",Arial,sans-serif;font-size:1rem;line-height:1.25rem;cursor:pointer;}</style>
+    <form action="https://www.paypal.com/ncp/payment/KY8YE7AHVD9PE" method="post" target="_blank" style="display:inline-grid;justify-items:center;align-content:start;gap:0.5rem;">
+      <button class="pp-btn" type="submit" data-i18n="donate_paypal_btn">Donner via PayPal</button>
+      <img src="https://www.paypalobjects.com/images/Debit_Credit.svg" alt="cards" />
+      <section style="font-size:0.75rem;">
+        <span data-i18n="donate_paypal_powered">Optimisé par</span>
+        <img src="https://www.paypalobjects.com/paypal-ui/logos/svg/paypal-wordmark-color.svg" alt="paypal" style="height:0.875rem;vertical-align:middle;">
+      </section>
+    </form>
+  </div>
+</div>
+
+    <!-- Ko-fi (actif) -->
+    <div class="donate-option">
+      <div class="donate-icon">
+        <i class="fas fa-coffee fa-3x"></i>
+      </div>
+      <h3>Ko-fi</h3>
+      <p data-i18n="donate_kofi_desc">Soutenez avec un café virtuel, sans commission.</p>
+      <a href="https://ko-fi.com/mediaforge" target="_blank" rel="noopener" class="btn btn-primary donate-btn" style="background:#FF5E5B; border-color:#FF5E5B;">
+        <i class="fas fa-coffee"></i> <span data-i18n="donate_kofi_btn">Offrir un café</span>
+      </a>
+    </div>
+
+    <!-- GitHub Sponsors (indisponible) -->
+    <div class="donate-option disabled-option">
+      <div class="donate-icon">
+        <i class="fab fa-github fa-3x"></i>
+      </div>
+      <h3>GitHub Sponsors</h3>
+      <p data-i18n="donate_github_desc">Devenez sponsor sur GitHub pour un soutien récurrent.</p>
+      <button class="btn btn-ghost donate-btn disabled-btn" disabled data-i18n="donate_unavailable">Indisponible pour le moment</button>
+    </div>
+
+    <!-- Cryptomonnaies (actif, lien vers page dédiée) -->
+<div class="donate-option">
+  <div class="donate-icon crypto-icon">
+    <i class="fas fa-coins fa-3x"></i>
+  </div>
+  <h3>Cryptomonnaies</h3>
+  <p data-i18n="donate_crypto_desc">Bitcoin, Ethereum, USDT, BNB, etc.</p>
+  <a href="/crypto" class="btn btn-primary donate-btn" data-i18n="donate_crypto_btn">Voir les adresses</a>
+</div>
+
+</div>
+
+  <div class="divider"></div>
+
+  <div class="donate-thanks">
+    <h3 data-i18n="donate_thanks_title">Merci pour votre soutien !</h3>
+    <p data-i18n="donate_thanks_desc">Chaque don, même modeste, contribue à rendre MediaForge meilleur. Votre nom sera mentionné dans les crédits si vous le souhaitez.</p>
+  </div>
+</div>
+
+<div class="glass-card anim-2" style="margin-top:1.5rem;">
+  <h3 data-i18n="donate_why_title">Pourquoi faire un don ?</h3>
+  <div class="grid-3" style="font-size:0.85rem; color:var(--text-muted);">
+    <div class="glass-card-sm">
+      <i class="fas fa-server"></i> <span data-i18n="donate_why_server">Hébergement et bande passante</span>
+    </div>
+    <div class="glass-card-sm">
+      <i class="fas fa-code"></i> <span data-i18n="donate_why_dev">Développement de nouvelles fonctionnalités</span>
+    </div>
+    <div class="glass-card-sm">
+      <i class="fas fa-headset"></i> <span data-i18n="donate_why_support">Support technique et maintenance</span>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Aucun script nécessaire pour les boutons désactivés
+
+</script>
+{% endblock %}

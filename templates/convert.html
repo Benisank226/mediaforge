@@ -1,0 +1,367 @@
+{% extends "base.html" %}
+{% block title %}Convertisseur — MediaForge{% endblock %}
+
+{% block content %}
+<section class="hero" style="padding:2rem 0 1.5rem;">
+  <h1 style="font-size:clamp(2rem,5vw,3.5rem);"><span data-i18n="convert_title">Convertisseur</span> <span data-i18n="convert_title_span">universel</span></h1>
+  <p data-i18n="convert_sub">Vidéo, audio, images — glisse ton fichier et choisis le format cible</p>
+</section>
+
+<div data-tabs>
+  <div class="tabs">
+    <button class="tab-btn active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg> Vidéo</button>
+    <button class="tab-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg> Audio</button>
+    <button class="tab-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> Image</button>
+    <button class="tab-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg> Merge A+V</button>
+    <button class="tab-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg> Compression</button>
+  </div>
+
+  <!-- TAB VIDÉO -->
+  <div class="tab-content active">
+    <div class="glass-card">
+      <div class="dropzone" id="video-drop">
+        <div class="dropzone-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="46" height="46"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></div>
+        <h3 data-i18n="video_drop_title">Glisse ta vidéo ici</h3>
+        <p data-i18n="video_drop_desc">ou clique pour choisir — MP4, MKV, AVI, MOV, WEBM, FLV…</p>
+        <input type="file" id="video-file" accept="video/*" style="display:none"/>
+      </div>
+      <div id="video-file-info" style="display:none;margin-top:1rem;" class="glass-card-sm">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></span>
+          <div><div id="vf-name" style="font-weight:600;font-size:0.9rem;"></div><div id="vf-size" style="font-size:0.78rem;color:var(--text-muted);"></div></div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="grid-2">
+        <div class="field-group"><label class="field-label" data-i18n="output_format">Format de sortie</label>
+          <select class="field-input" id="video-format">
+            <option value="mp4">MP4 (recommandé)</option><option value="mkv">MKV</option><option value="avi">AVI</option>
+            <option value="mov">MOV</option><option value="webm">WEBM</option><option value="flv">FLV</option><option value="gif">GIF</option>
+          </select>
+        </div>
+        <div class="field-group"><label class="field-label" data-i18n="quality">Qualité</label>
+          <select class="field-input" id="video-quality">
+            <option value="high">Haute (gros fichier)</option><option value="medium" selected>Moyenne (équilibre)</option><option value="low">Basse (petit fichier)</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:flex;gap:0.7rem;flex-wrap:wrap;">
+        <button class="btn btn-primary" id="btn-convert-video"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg> <span data-i18n="btn_convert">Convertir</span></button>
+        <a class="btn btn-success" id="convert-result-btn" style="display:none;" download><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> <span data-i18n="btn_download">Télécharger</span></a>
+      </div>
+      <div class="progress-wrap" id="convert-progress-wrap"><div class="progress-header"><span class="progress-label"><span data-i18n="converting">Conversion en cours…</span></span><span id="convert-status"></span></div><div class="progress-bar-track"><div class="progress-bar-fill" id="convert-progress-fill"></div></div></div>
+    </div>
+  </div>
+
+  <!-- TAB AUDIO -->
+  <div class="tab-content">
+    <div class="glass-card">
+      <div class="dropzone" id="audio-drop"><div class="dropzone-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="46" height="46"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div><h3 data-i18n="audio_drop_title">Glisse ton fichier audio</h3><p data-i18n="audio_drop_desc">MP3, WAV, FLAC, OGG, AAC, M4A…</p><input type="file" id="audio-file" accept="audio/*,video/*" style="display:none"/></div>
+      <div id="audio-file-info" style="display:none;margin-top:1rem;" class="glass-card-sm"><span id="af-name"></span></div>
+      <div class="divider"></div>
+      <div class="grid-2">
+        <div class="field-group"><label class="field-label" data-i18n="output_format">Format de sortie</label>
+          <select class="field-input" id="audio-format"><option value="mp3">MP3</option><option value="flac">FLAC (lossless)</option><option value="wav">WAV</option><option value="ogg">OGG</option><option value="aac">AAC</option><option value="m4a">M4A</option><option value="opus">OPUS</option></select>
+        </div>
+        <div class="field-group"><label class="field-label" data-i18n="quality">Qualité</label>
+          <select class="field-input" id="audio-quality"><option value="high">Haute</option><option value="medium" selected>Moyenne</option><option value="low">Basse</option></select>
+        </div>
+      </div>
+      <div style="display:flex;gap:0.7rem;"><button class="btn btn-primary" id="btn-convert-audio"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg> <span data-i18n="btn_convert">Convertir</span></button><a class="btn btn-success" id="audio-result-btn" style="display:none;" download><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> <span data-i18n="btn_download">Télécharger</span></a></div>
+    </div>
+  </div>
+
+  <!-- TAB IMAGE -->
+  <div class="tab-content">
+    <div class="glass-card">
+      <div class="dropzone" id="img-drop"><div class="dropzone-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="46" height="46"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div><h3 data-i18n="img_drop_title">Glisse ton image</h3><p data-i18n="img_drop_desc">JPG, PNG, WEBP, AVIF, BMP, TIFF…</p><input type="file" id="img-file" accept="image/*" style="display:none"/></div>
+      <div id="img-file-info" style="display:none;margin-top:1rem;" class="glass-card-sm"><span id="imgf-name"></span></div>
+      <div class="divider"></div>
+      <div class="grid-2">
+        <div class="field-group"><label class="field-label" data-i18n="output_format">Format de sortie</label>
+          <select class="field-input" id="img-format"><option value="jpg">JPG</option><option value="png">PNG</option><option value="webp">WEBP (petit)</option><option value="avif">AVIF (ultra compact)</option><option value="bmp">BMP</option></select>
+        </div>
+        <div class="field-group"><label class="field-label">Qualité : <span id="img-quality-val">80</span>%</label><input type="range" id="img-quality" min="10" max="100" value="80" oninput="document.getElementById('img-quality-val').textContent=this.value"/></div>
+        <div class="field-group" id="img-effort-group" style="display:none;"><label class="field-label">Effort de compression : <span id="img-effort-val">4</span></label><input type="range" id="img-effort" min="0" max="6" value="4" oninput="document.getElementById('img-effort-val').textContent=this.value"/></div>
+      </div>
+      <div style="display:flex;gap:0.7rem;"><button class="btn btn-primary" id="btn-compress-img"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg> <span data-i18n="btn_compress_convert">Convertir / Compresser</span></button><a class="btn btn-success" id="img-result-btn" style="display:none;" download><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> <span data-i18n="btn_download">Télécharger</span></a></div>
+      <div id="img-stats" style="display:none;margin-top:1rem;" class="stats-row"></div>
+    </div>
+  </div>
+
+  <!-- TAB MERGE A+V -->
+  <div class="tab-content">
+    <div class="glass-card">
+      <p style="font-size:0.87rem;color:var(--text-muted);margin-bottom:1.2rem;" data-i18n="merge_desc">Fusionne une piste audio sur une vidéo existante</p>
+      <div class="grid-2">
+        <div><label class="field-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg> Vidéo source</label>
+          <div class="dropzone" id="merge-video-drop" style="padding:1.5rem;"><div class="dropzone-icon" style="font-size:2rem;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="32" height="32"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></div><p style="font-size:0.8rem;" data-i18n="video_source">Vidéo (MP4, MKV…)</p><input type="file" id="merge-video-file" accept="video/*" style="display:none"/></div>
+          <div id="merge-vf-info" style="display:none;font-size:0.82rem;margin-top:0.5rem;color:var(--success);">✅ Vidéo chargée</div>
+        </div>
+        <div><label class="field-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg> Audio source</label>
+          <div class="dropzone" id="merge-audio-drop" style="padding:1.5rem;"><div class="dropzone-icon" style="font-size:2rem;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="32" height="32"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div><p style="font-size:0.8rem;" data-i18n="audio_source">Audio (MP3, WAV…)</p><input type="file" id="merge-audio-file" accept="audio/*" style="display:none"/></div>
+          <div id="merge-af-info" style="display:none;font-size:0.82rem;margin-top:0.5rem;color:var(--success);">✅ Audio chargé</div>
+        </div>
+      </div>
+      <div class="field-group"><label class="field-label" data-i18n="merge_option">Option de synchronisation</label>
+        <select class="field-input" id="merge-option"><option value="shortest" data-i18n="merge_shortest">Couper à la plus courte</option><option value="loop" data-i18n="merge_loop">Boucler l'audio</option><option value="pad" data-i18n="merge_pad">Ajouter du silence (si audio plus court)</option></select>
+      </div>
+      <div style="margin-top:1rem;display:flex;gap:0.7rem;"><button class="btn btn-primary" id="btn-merge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg> <span data-i18n="btn_merge">Fusionner</span></button><a class="btn btn-success" id="merge-result-btn" style="display:none;" download><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> <span data-i18n="btn_download">Télécharger</span></a></div>
+    </div>
+  </div>
+
+  <!-- TAB COMPRESSION -->
+  <div class="tab-content">
+    <div class="glass-card">
+      <p style="font-size:0.87rem;color:var(--text-muted);margin-bottom:1rem;" data-i18n="compress_tab_desc">Compresse tes images avec un curseur de qualité intuitif</p>
+      <div class="dropzone" id="compress-drop"><div class="dropzone-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="46" height="46"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg></div><h3 data-i18n="compress_drop_title">Glisse ton image</h3><p data-i18n="compress_drop_desc">JPG, PNG, WEBP…</p><input type="file" id="compress-file" accept="image/*" style="display:none"/></div>
+      <div class="divider"></div>
+      <div class="field-group"><label class="field-label">Qualité : <span id="compress-val">75</span>%</label><input type="range" id="compress-quality" min="5" max="100" value="75" oninput="document.getElementById('compress-val').textContent=this.value"/></div>
+      <div class="field-group"><label class="field-label" data-i18n="output_format">Format de sortie</label>
+        <select class="field-input" id="compress-format"><option value="jpg">JPG</option><option value="webp">WEBP (meilleure compression)</option><option value="png">PNG</option></select>
+      </div>
+      <div class="field-group" id="compress-effort-group" style="display:none;"><label class="field-label">Effort : <span id="compress-effort-val">4</span></label><input type="range" id="compress-effort" min="0" max="6" value="4" oninput="document.getElementById('compress-effort-val').textContent=this.value"/></div>
+      <div style="display:flex;gap:0.7rem;"><button class="btn btn-primary" id="btn-compress"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg> <span data-i18n="btn_compress">Compresser</span></button><a class="btn btn-success" id="compress-result-btn" style="display:none;" download><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> <span data-i18n="btn_download">Télécharger</span></a></div>
+      <div id="compress-stats" style="display:none;margin-top:1rem;" class="stats-row"></div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// ─── ÉTAT ─────────────────────────────────────────────────────────────────────
+let videoFileObj = null;
+let audioFileObj = null;
+let imgFileObj   = null;
+let compressFileObj = null;
+let mergeVideoFile  = null;
+let mergeAudioFile  = null;
+
+// ─── DROPZONES ────────────────────────────────────────────────────────────────
+initDropzone(document.getElementById('video-drop'), document.getElementById('video-file'), f => {
+  videoFileObj = f;
+  document.getElementById('video-file-info').style.display = 'block';
+  document.getElementById('vf-name').textContent = f.name;
+  document.getElementById('vf-size').textContent = formatSize(f.size);
+  toast('Vidéo chargée', 'success');
+});
+
+initDropzone(document.getElementById('audio-drop'), document.getElementById('audio-file'), f => {
+  audioFileObj = f;
+  document.getElementById('audio-file-info').style.display = 'block';
+  document.getElementById('af-name').textContent = f.name;
+  toast('Audio chargé', 'success');
+});
+
+initDropzone(document.getElementById('img-drop'), document.getElementById('img-file'), f => {
+  imgFileObj = f;
+  document.getElementById('img-file-info').style.display = 'block';
+  document.getElementById('imgf-name').textContent = f.name;
+});
+
+initDropzone(document.getElementById('compress-drop'), document.getElementById('compress-file'), f => {
+  compressFileObj = f;
+  toast('Image chargée', 'success');
+});
+
+initDropzone(document.getElementById('merge-video-drop'), document.getElementById('merge-video-file'), f => {
+  mergeVideoFile = f;
+  document.getElementById('merge-vf-info').style.display = 'block';
+  toast('Vidéo chargée pour le merge', 'success');
+});
+
+initDropzone(document.getElementById('merge-audio-drop'), document.getElementById('merge-audio-file'), f => {
+  mergeAudioFile = f;
+  document.getElementById('merge-af-info').style.display = 'block';
+  toast('Audio chargé pour le merge', 'success');
+});
+
+// ─── Afficher effort selon format image ───────────────────────────────────────
+document.getElementById('img-format').addEventListener('change', function() {
+  const effortGroup = document.getElementById('img-effort-group');
+  effortGroup.style.display = (this.value === 'webp' || this.value === 'avif') ? 'block' : 'none';
+});
+
+document.getElementById('compress-format').addEventListener('change', function() {
+  const effortGroup = document.getElementById('compress-effort-group');
+  effortGroup.style.display = this.value === 'webp' ? 'block' : 'none';
+});
+
+// ─── CONVERSION VIDÉO ─────────────────────────────────────────────────────────
+document.getElementById('btn-convert-video').addEventListener('click', async () => {
+  if (!videoFileObj) { toast('Aucun fichier sélectionné', 'warning'); return; }
+  const fd = new FormData();
+  fd.append('file', videoFileObj);
+  fd.append('format', document.getElementById('video-format').value);
+  fd.append('quality', document.getElementById('video-quality').value);
+
+  const wrap = document.getElementById('convert-progress-wrap');
+  const fill = document.getElementById('convert-progress-fill');
+  wrap.classList.add('show');
+  if (fill) fill.style.width = '20%';
+
+  try {
+    const res = await fetch('/api/convert', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (fill) fill.style.width = '60%';
+
+    socket.once('convert_complete', d => {
+      if (fill) fill.style.width = '100%';
+      const btn = document.getElementById('convert-result-btn');
+      btn.style.display = 'inline-flex';
+      btn.href = d.download_url;
+      btn.setAttribute('download', d.filename);
+      toast('Conversion vidéo terminée !', 'success');
+    });
+
+    socket.once('convert_error', d => {
+      wrap.classList.remove('show');
+      toast('Erreur : ' + (d.error || '').slice(0, 100), 'error', 6000);
+    });
+
+    toast('Conversion vidéo démarrée…', 'info');
+  } catch(e) {
+    wrap.classList.remove('show');
+    toast('Erreur réseau : ' + e.message, 'error');
+  }
+});
+
+// ─── CONVERSION AUDIO ─────────────────────────────────────────────────────────
+document.getElementById('btn-convert-audio').addEventListener('click', async () => {
+  if (!audioFileObj) { toast('Aucun fichier sélectionné', 'warning'); return; }
+  const fd = new FormData();
+  fd.append('file', audioFileObj);
+  fd.append('format', document.getElementById('audio-format').value);
+  fd.append('quality', document.getElementById('audio-quality').value);
+
+  try {
+    const res = await fetch('/api/convert', { method: 'POST', body: fd });
+    const data = await res.json();
+
+    socket.once('convert_complete', d => {
+      const btn = document.getElementById('audio-result-btn');
+      btn.style.display = 'inline-flex';
+      btn.href = d.download_url;
+      btn.setAttribute('download', d.filename);
+      toast('Conversion audio terminée !', 'success');
+    });
+
+    socket.once('convert_error', d => toast('Erreur : ' + (d.error || '').slice(0, 100), 'error', 6000));
+    toast('Conversion audio démarrée…', 'info');
+  } catch(e) {
+    toast('Erreur réseau : ' + e.message, 'error');
+  }
+});
+
+// ─── COMPRESSION / CONVERSION IMAGE ───────────────────────────────────────────
+document.getElementById('btn-compress-img').addEventListener('click', async () => {
+  if (!imgFileObj) { toast('Aucun fichier sélectionné', 'warning'); return; }
+  const fmt = document.getElementById('img-format').value;
+  const fd = new FormData();
+  fd.append('file', imgFileObj);
+  fd.append('format', fmt);
+  fd.append('quality', document.getElementById('img-quality').value);
+  if (fmt === 'webp' || fmt === 'avif') {
+    fd.append('effort', document.getElementById('img-effort').value);
+  }
+
+  try {
+    const res = await fetch('/api/compress_image', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (data.success) {
+      const btn = document.getElementById('img-result-btn');
+      btn.style.display = 'inline-flex';
+      btn.href = data.download_url;
+      btn.setAttribute('download', data.filename);
+      const pct = Math.round((1 - data.new_size / data.original_size) * 100);
+      const statsEl = document.getElementById('img-stats');
+      statsEl.style.display = 'flex';
+      statsEl.innerHTML = `
+        <div class="stat-box"><div class="stat-value">${formatSize(data.original_size)}</div><div class="stat-label">Original</div></div>
+        <div class="stat-box"><div class="stat-value">${formatSize(data.new_size)}</div><div class="stat-label">Converti</div></div>
+        <div class="stat-box"><div class="stat-value" style="color:var(--success)">-${pct}%</div><div class="stat-label">Réduction</div></div>
+      `;
+      toast(`Image convertie — ${pct}% de réduction`, 'success');
+      History.add({ type: 'convert', iconType: 'image', name: data.filename, url: data.download_url });
+    } else {
+      toast(data.error, 'error');
+    }
+  } catch(e) {
+    toast('Erreur réseau : ' + e.message, 'error');
+  }
+});
+
+// ─── COMPRESSION IMAGE (onglet Compression) ───────────────────────────────────
+document.getElementById('btn-compress').addEventListener('click', async () => {
+  if (!compressFileObj) { toast('Aucun fichier sélectionné', 'warning'); return; }
+  const fmt = document.getElementById('compress-format').value;
+  const fd = new FormData();
+  fd.append('file', compressFileObj);
+  fd.append('format', fmt);
+  fd.append('quality', document.getElementById('compress-quality').value);
+  if (fmt === 'webp') {
+    fd.append('effort', document.getElementById('compress-effort').value);
+  }
+
+  try {
+    const res = await fetch('/api/compress_image', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (data.success) {
+      const btn = document.getElementById('compress-result-btn');
+      btn.style.display = 'inline-flex';
+      btn.href = data.download_url;
+      btn.setAttribute('download', data.filename);
+      const pct = Math.round((1 - data.new_size / data.original_size) * 100);
+      const statsEl = document.getElementById('compress-stats');
+      statsEl.style.display = 'flex';
+      statsEl.innerHTML = `
+        <div class="stat-box"><div class="stat-value">${formatSize(data.original_size)}</div><div class="stat-label">Original</div></div>
+        <div class="stat-box"><div class="stat-value">${formatSize(data.new_size)}</div><div class="stat-label">Compressé</div></div>
+        <div class="stat-box"><div class="stat-value" style="color:var(--success)">-${pct}%</div><div class="stat-label">Gain</div></div>
+      `;
+      toast(`Compressé — -${pct}% !`, 'success');
+      History.add({ type: 'convert', iconType: 'image', name: data.filename, url: data.download_url });
+    } else {
+      toast(data.error, 'error');
+    }
+  } catch(e) {
+    toast('Erreur réseau : ' + e.message, 'error');
+  }
+});
+
+// ─── MERGE AUDIO + VIDÉO ──────────────────────────────────────────────────────
+document.getElementById('btn-merge').addEventListener('click', async () => {
+  if (!mergeVideoFile || !mergeAudioFile) {
+    toast('Sélectionne une vidéo ET un audio', 'warning');
+    return;
+  }
+  const option = document.getElementById('merge-option').value;
+  const fd = new FormData();
+  fd.append('video', mergeVideoFile);
+  fd.append('audio', mergeAudioFile);
+  fd.append('option', option);
+
+  try {
+    const res = await fetch('/api/merge', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (data.success) {
+      const btn = document.getElementById('merge-result-btn');
+      btn.style.display = 'inline-flex';
+      btn.href = data.download_url;
+      btn.setAttribute('download', data.filename);
+      toast('Fusion réussie !', 'success');
+      History.add({ type: 'convert', iconType: 'video', name: data.filename, url: data.download_url });
+    } else {
+      toast((data.error || 'Erreur').slice(0, 120), 'error', 6000);
+    }
+  } catch(e) {
+    toast('Erreur réseau : ' + e.message, 'error');
+  }
+});
+
+// ─── TABS init (data-tabs déjà géré par main.js) ─────────────────────────────
+// initTabs() est appelé automatiquement dans DOMContentLoaded de main.js
+</script>
+{% endblock %}

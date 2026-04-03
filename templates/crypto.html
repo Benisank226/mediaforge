@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+{% block title %}Dons en cryptomonnaies — MediaForge{% endblock %}
+
+{% block content %}
+
+<!-- ══ HERO ═══════════════════════════════════════════════════ -->
+<section class="hero anim-crypto-1" style="padding:2.5rem 0 2rem;">
+  <div class="crypto-hero-label">
+    <span class="crypto-hero-label-dot"></span>
+    <span data-i18n="crypto_badge">Donations sécurisées</span>
+  </div>
+  <h1 class="crypto-hero-title">
+    <span data-i18n="crypto_title">Dons en</span>
+    <span class="gradient-btc" data-i18n="crypto_title_span"> cryptomonnaies</span>
+  </h1>
+  <p class="crypto-hero-sub" data-i18n="crypto_sub">
+    Soutenez MediaForge avec Bitcoin, Ethereum, USDT, BNB et plus.
+    Les fonds sont reversés directement sur mon compte Binance.
+  </p>
+
+  <!-- Trust Bar -->
+  <div class="crypto-trust-bar anim-crypto-2">
+    <div class="trust-item">
+      <i class="fas fa-shield-alt trust-icon-shield"></i>
+      <span data-i18n="trust_secure">Transactions sécurisées</span>
+    </div>
+    <div class="trust-item">
+      <i class="fas fa-link trust-icon-link"></i>
+      <span data-i18n="trust_chain">Vérifiables sur la blockchain</span>
+    </div>
+    <div class="trust-item">
+      <i class="fab fa-bitcoin" style="color:#F7931A;"></i>
+      <span data-i18n="trust_multi">5 cryptos acceptées</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══ BINANCE BADGE ════════════════════════════════════════════ -->
+<div class="crypto-section-header anim-crypto-2">
+  <span class="binance-badge">
+    <i class="fas fa-university"></i>
+    <span data-i18n="binance_badge">Compte Binance vérifié · Toutes adresses actives</span>
+  </span>
+</div>
+
+<!-- ══ CRYPTO GRID ═════════════════════════════════════════════ -->
+<div class="crypto-grid anim-crypto-3">
+
+  <!-- ── Bitcoin ────────────────────────────────────────── -->
+  <div class="crypto-card btc">
+    <div class="crypto-logo">
+      <i class="fab fa-bitcoin" style="color:#F7931A;"></i>
+    </div>
+    <div class="crypto-name">Bitcoin <span style="opacity:.5;font-weight:400;">(BTC)</span></div>
+    <div class="crypto-network">
+      <span class="network-badge bep20">BSC · BEP20</span>
+      <div class="crypto-address" id="btc-bsc">0x844abfadf9c2a2e3eba617dc24bfea16710e3c44</div>
+      <button class="btn-crypto-copy" data-address="btc-bsc">
+        <i class="fas fa-copy"></i> <span data-i18n="copy_address">Copier l'adresse</span>
+      </button>
+    </div>
+    <div class="crypto-network">
+      <span class="network-badge native">Bitcoin · BTC</span>
+      <div class="crypto-address" id="btc-btc">15Q3g3chzPG2ehU1kEqx3D78WE29SKZijP</div>
+      <button class="btn-crypto-copy" data-address="btc-btc">
+        <i class="fas fa-copy"></i> <span data-i18n="copy_address">Copier l'adresse</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── USDT ───────────────────────────────────────────── -->
+  <div class="crypto-card usdt">
+    <div class="crypto-logo">
+      <i class="fas fa-dollar-sign" style="color:#26A17B; font-size:2.4rem;"></i>
+    </div>
+    <div class="crypto-name">Tether <span style="opacity:.5;font-weight:400;">(USDT)</span></div>
+    <div class="crypto-network">
+      <span class="network-badge bep20">BSC · BEP20</span>
+      <div class="crypto-address" id="usdt-bsc">0x844abfadf9c2a2e3eba617dc24bfea16710e3c44</div>
+      <button class="btn-crypto-copy" data-address="usdt-bsc">
+        <i class="fas fa-copy"></i> <span data-i18n="copy_address">Copier l'adresse</span>
+      </button>
+    </div>
+    <div class="crypto-network">
+      <span class="network-badge trc20">TRC20 · TRX</span>
+      <div class="crypto-address" id="usdt-trx">TDqRbYnER6mgmpghjpRchrgEfTxthDJuSd</div>
+      <button class="btn-crypto-copy" data-address="usdt-trx">
+        <i class="fas fa-copy"></i> <span data-i18n="copy_address">Copier l'adresse</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── USDC ───────────────────────────────────────────── -->
+  <div class="crypto-card usdc">
+    <div class="crypto-logo">
+      <i class="fas fa-coins" style="color:#2775CA; font-size:2.4rem;"></i>
+    </div>
+    <div class="crypto-name">USD Coin <span style="opacity:.5;font-weight:400;">(USDC)</span></div>
+    <div class="crypto-network">
+      <span class="network-badge bep20">BSC · BEP20</span>
+      <div class="crypto-address" id="usdc-bsc">0x844abfadf9c2a2e3eba617dc24bfea16710e3c44</div>
+      <button class="btn-crypto-copy" data-address="usdc-bsc">
+        <i class="fas fa-copy"></i> <span data-i18n="copy_address">Copier l'adresse</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Ethereum ───────────────────────────────────────── -->
+  <div class="crypto-card eth">
+    <div class="crypto-logo">
+      <i class="fab fa-ethereum" style="color:#627EEA;"></i>
+    </div>
+    <div class="crypto-name">Ethereum <span style="opacity:.5;font-weight:400;">(ETH)</span></div>
+    <div class="crypto-network">
+      <span class="network-badge bep20">BSC · BEP20</span>
+      <div class="crypto-address" id="eth-bsc">0x844abfadf9c2a2e3eba617dc24bfea16710e3c44</div>
+      <button class="btn-crypto-copy" data-address="eth-bsc">
+        <i class="fas fa-copy"></i> <span data-i18n="copy_address">Copier l'adresse</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── BNB ────────────────────────────────────────────── -->
+  <div class="crypto-card bnb">
+    <div class="crypto-logo">
+      <i class="fas fa-circle-notch" style="color:#F3BA2F; font-size:2.4rem;"></i>
+    </div>
+    <div class="crypto-name">BNB <span style="opacity:.5;font-weight:400;">(BSC)</span></div>
+    <div class="crypto-network">
+      <span class="network-badge bep20">BSC · BEP20</span>
+      <div class="crypto-address" id="bnb-bsc">0x844abfadf9c2a2e3eba617dc24bfea16710e3c44</div>
+      <button class="btn-crypto-copy" data-address="bnb-bsc">
+        <i class="fas fa-copy"></i> <span data-i18n="copy_address">Copier l'adresse</span>
+      </button>
+    </div>
+  </div>
+
+</div><!-- /crypto-grid -->
+
+<!-- ══ SECURITY NOTE ════════════════════════════════════════════ -->
+<div class="crypto-note anim-crypto-4">
+  <div class="crypto-note-icon">
+    <i class="fas fa-shield-alt"></i>
+  </div>
+  <div class="crypto-note-text">
+    <strong data-i18n="crypto_note_title">Transactions 100 % sécurisées</strong>
+    <span data-i18n="crypto_note">Toutes ces adresses pointent vers mon compte Binance vérifié. Chaque transaction est immuable et vérifiable sur la blockchain. Merci du fond du cœur pour votre soutien — il fait vraiment la différence !</span>
+  </div>
+</div>
+
+<!-- ══ BACK ══════════════════════════════════════════════════════ -->
+<div class="crypto-back anim-crypto-5">
+  <a href="/donate" class="btn btn-ghost" data-i18n="crypto_back">← Retour aux dons</a>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.querySelectorAll('.btn-crypto-copy').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const addressEl = document.getElementById(btn.getAttribute('data-address'));
+    if (!addressEl) return;
+    navigator.clipboard.writeText(addressEl.innerText.trim()).then(() => {
+      const icon  = btn.querySelector('i');
+      const label = btn.querySelector('span');
+      const orig  = label ? label.textContent : '';
+      if (icon)  icon.className  = 'fas fa-check';
+      if (label) label.textContent = 'Copié !';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        if (icon)  icon.className  = 'fas fa-copy';
+        if (label) label.textContent = orig;
+        btn.classList.remove('copied');
+      }, 2000);
+      if (typeof toast === 'function') toast('Adresse copiée dans le presse-papier', 'success');
+    }).catch(() => {
+      if (typeof toast === 'function') toast('Impossible de copier automatiquement', 'error');
+    });
+  });
+});
+</script>
+{% endblock %}
