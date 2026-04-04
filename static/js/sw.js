@@ -12,7 +12,8 @@ const urlsToCache = [
   '/subtitles',
   '/gifmaker',
   '/history',
-  '/static/img/gifs/demo.gif'  
+  '/static/img/gifs/demo.gif',
+  '/crypto'
 ];
 
 // Installation : met en cache les ressources statiques

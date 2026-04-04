@@ -531,11 +531,11 @@ def get_file(folder, task_id, filename):
         return response
 
     return send_file(path, as_attachment=True)
-"""   
+
 @app.route('/sw.js')
 def service_worker():
     return send_file('static/js/sw.js', mimetype='application/javascript')
-"""
+
 @app.route('/donate')
 def donate_page():
     return render_template('donate.html')
@@ -543,6 +543,11 @@ def donate_page():
 @app.route('/crypto')
 def crypto_page():
     return render_template('crypto.html')
+    
+    
+@app.route('/ping')
+def ping():
+    return "OK", 200
    
 # ─── NETTOYAGE AUTOMATIQUE DES FICHIERS OBSOLÈTES ────────────────────────────
 def clean_old_files():
