@@ -12,4 +12,4 @@ COPY . .
 ENV PORT=5000
 EXPOSE $PORT
 
-CMD ["gunicorn", "--worker-class", "eventlet", "--bind", "0.0.0.0:$PORT", "wsgi:app"]
+CMD sh -c "gunicorn", "--worker-class", "eventlet", "--bind", "0.0.0.0:$PORT", "wsgi:app"
