@@ -126,6 +126,9 @@ def download_media():
                 'outtmpl': os.path.join(out_path, '%(title)s.%(ext)s'),
                 'progress_hooks': [progress_hook],
                 'quiet': True,
+                'cookiefile': 'cookies.txt', 
+                'ignoreerrors': True,
+                'no_warnings': True,  
             }
             if audio_only:
                 ydl_opts['format'] = 'bestaudio/best'
