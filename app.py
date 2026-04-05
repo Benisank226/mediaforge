@@ -52,7 +52,7 @@ YDL_COMMON_OPTS = {
     'extractor_args': {
         'youtube': {
             'player_client': ['web', 'android'],
-            'po_token': ['web']  # Le provider PO Token injectera automatiquement la valeur
+           # 'po_token': ['web']   Le provider PO Token injectera automatiquement la valeur
         }
     }
 }
