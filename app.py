@@ -5,11 +5,17 @@ import base64
 import subprocess
 import threading
 import time
+import logging
 from flask import Flask, render_template, request, jsonify, send_file, abort, after_this_request
 from flask_socketio import SocketIO, emit
 from werkzeug.utils import secure_filename
 import yt_dlp
 import tempfile
+
+# Configuration du logging
+logging.basicConfig(level=logging.INFO)
+app_logger = logging.getLogger(__name__)
+
 tmp_dir = tempfile.gettempdir()
 
 app = Flask(__name__)
@@ -87,8 +93,14 @@ def preview():
         ydl_opts = YDL_COMMON_OPTS.copy()
         ydl_opts['skip_download'] = True
         
+        app_logger.info(f"Analyse de l'URL : {url}")
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
+            
+            if info is None:
+                app_logger.error(f"extract_info a retourné None pour {url}")
+                return jsonify({'error': 'Impossible d\'extraire les informations. Vérifiez l\'URL ou réessayez plus tard.'}), 500
+            
             formats = []
             seen = set()
             for f in info.get('formats', []):
@@ -114,6 +126,7 @@ def preview():
                 'formats': formats_video + formats_audio
             })
     except Exception as e:
+        app_logger.exception("Erreur dans preview")
         return jsonify({'error': str(e)}), 500
 
 # ─── API : TÉLÉCHARGEMENT VIDÉO/AUDIO (with cancel) ───────────────────────────
@@ -158,15 +171,19 @@ def download_media():
                     'preferedformat': 'mp4',
                 }]
             try:
+                app_logger.info(f"Début du téléchargement pour {task_id} : {url}")
                 with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                     ydl.download([url])
                 files = os.listdir(out_path)
                 if files:
                     filename = files[0]
                     socketio.emit('download_complete', {'task_id': task_id, 'filename': filename, 'download_url': f'/api/get_file/downloads/{task_id}/{filename}'})
+                    app_logger.info(f"Téléchargement terminé : {filename}")
                 else:
                     socketio.emit('download_error', {'task_id': task_id, 'error': 'Fichier introuvable après téléchargement'})
+                    app_logger.error(f"Aucun fichier trouvé dans {out_path}")
             except Exception as e:
+                app_logger.exception(f"Erreur lors du téléchargement {task_id}")
                 socketio.emit('download_error', {'task_id': task_id, 'error': str(e)})
             finally:
                 if task_id in active_downloads:
