@@ -69,7 +69,7 @@ def preview():
     if not url:
         return jsonify({'error': 'URL manquante'}), 400
     try:
-        ydl_opts = {'quiet': True, 'no_warnings': True, 'skip_download': True, 'cookiefile': 'cookies.txt',  'user_agent': 'Mozilla/5.0 (Linux; Android 10; STK-L22) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Mobile Safari/537.36'}
+        ydl_opts = {'quiet': True, 'no_warnings': True, 'skip_download': True, 'cookiefile': 'cookies.txt', 'user_agent': 'Mozilla/5.0 (Linux; Android 10; STK-L22) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Mobile Safari/537.36'}
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
             formats = []
