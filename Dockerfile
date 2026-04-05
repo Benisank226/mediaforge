@@ -15,4 +15,4 @@ ENV PORT=5000
 EXPOSE $PORT
 
 # Lance le provider PO Token en arrière-plan, puis Gunicorn
-CMD ["sh", "-c", "bgutil-ytdlp-pot-provider server & ./start.sh"]
+CMD ["sh", "-c", "python -m bgutil_ytdlp_pot_provider.server & sleep 2 && ./start.sh"]
