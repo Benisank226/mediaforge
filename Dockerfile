@@ -14,4 +14,5 @@ RUN chmod +x start.sh
 ENV PORT=5000
 EXPOSE $PORT
 
-CMD ["./start.sh"]
+# Lance le provider PO Token en arrière-plan, puis Gunicorn
+CMD ["sh", "-c", "bgutil-ytdlp-pot-provider server & ./start.sh"]
