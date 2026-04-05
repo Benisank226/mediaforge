@@ -7,9 +7,6 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Vérifier que le provider est bien installé
-RUN pip show bgutil-ytdlp-pot-provider && echo "Provider installed"
-
 COPY . .
 
 RUN chmod +x start.sh

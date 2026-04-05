@@ -42,7 +42,7 @@ active_downloads = {}  # task_id -> subprocess
 active_conversions = {}  # task_id -> subprocess
 active_gifs = {}  # task_id -> subprocess
 
-# Configuration commune pour yt-dlp (PO Token + cookies + user agent)
+# Configuration commune pour yt-dlp (sans PO Token, avec client android)
 YDL_COMMON_OPTS = {
     'quiet': True,
     'no_warnings': True,
@@ -51,8 +51,8 @@ YDL_COMMON_OPTS = {
     'user_agent': 'Mozilla/5.0 (Linux; Android 10; STK-L22) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Mobile Safari/537.36',
     'extractor_args': {
         'youtube': {
-            'player_client': ['web', 'android'],
-           # 'po_token': ['web']   Le provider PO Token injectera automatiquement la valeur
+            'player_client': ['android', 'web'],
+            'skip': ['webpage'],
         }
     }
 }
