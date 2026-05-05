@@ -6,3 +6,4 @@ eventlet>=0.35.1
 gunicorn>=21.2.0
 python-dotenv
 bgutil-ytdlp-pot-provider>=0.0.6
+simple-websocket>=1.0.0
