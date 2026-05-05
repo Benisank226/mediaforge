@@ -5,17 +5,11 @@ import base64
 import subprocess
 import threading
 import time
-import logging
 from flask import Flask, render_template, request, jsonify, send_file, abort, after_this_request
 from flask_socketio import SocketIO, emit
 from werkzeug.utils import secure_filename
 import yt_dlp
 import tempfile
-
-# Configuration du logging
-logging.basicConfig(level=logging.INFO)
-app_logger = logging.getLogger(__name__)
-
 tmp_dir = tempfile.gettempdir()
 
 app = Flask(__name__)
@@ -41,23 +35,6 @@ download_semaphore = threading.Semaphore(3)
 active_downloads = {}  # task_id -> subprocess
 active_conversions = {}  # task_id -> subprocess
 active_gifs = {}  # task_id -> subprocess
-
-# Configuration commune pour yt-dlp (sans PO Token, avec client android)
-YDL_COMMON_OPTS = {
-    'quiet': True,
-    'no_warnings': True,
-    'ignoreerrors': True,
-    'cookiefile': 'cookies.txt',
-    'user_agent': 'Mozilla/5.0 (Linux; Android 10; STK-L22) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Mobile Safari/537.36',
-    'extractor_args': {
-        'youtube': {
-            'player_client': ['android', 'web'],
-            'skip': ['webpage'],
-        }
-    },
-    'restrictfilenames': True,   # Remplace les caractères spéciaux par _
-    'windowsfilenames': True,    # Évite les noms réservés sous Windows
-}
 
 # ─── ROUTES PRINCIPALES ───────────────────────────────────────────────────────
 @app.route('/')
@@ -92,17 +69,9 @@ def preview():
     if not url:
         return jsonify({'error': 'URL manquante'}), 400
     try:
-        ydl_opts = YDL_COMMON_OPTS.copy()
-        ydl_opts['skip_download'] = True
-        
-        app_logger.info(f"Analyse de l'URL : {url}")
+        ydl_opts = {'quiet': True, 'no_warnings': True, 'skip_download': True, 'cookiefile': 'cookies.txt', 'user_agent': 'Mozilla/5.0 (Linux; Android 10; STK-L22) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Mobile Safari/537.36'}
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
-            
-            if info is None:
-                app_logger.error(f"extract_info a retourné None pour {url}")
-                return jsonify({'error': 'Impossible d\'extraire les informations. Vérifiez l\'URL ou réessayez plus tard.'}), 500
-            
             formats = []
             seen = set()
             for f in info.get('formats', []):
@@ -128,7 +97,6 @@ def preview():
                 'formats': formats_video + formats_audio
             })
     except Exception as e:
-        app_logger.exception("Erreur dans preview")
         return jsonify({'error': str(e)}), 500
 
 # ─── API : TÉLÉCHARGEMENT VIDÉO/AUDIO (with cancel) ───────────────────────────
@@ -154,11 +122,15 @@ def download_media():
                     socketio.emit('progress', {'task_id': task_id, 'percent': pct_float, 'speed': speed, 'eta': eta})
                 elif d['status'] == 'finished':
                     socketio.emit('progress', {'task_id': task_id, 'percent': 100, 'speed': '--', 'eta': '0s'})
-            
-            ydl_opts = YDL_COMMON_OPTS.copy()
-            ydl_opts['outtmpl'] = os.path.join(out_path, '%(title)s.%(ext)s')
-            ydl_opts['progress_hooks'] = [progress_hook]
-            
+            ydl_opts = {
+                'outtmpl': os.path.join(out_path, '%(title)s.%(ext)s'),
+                'progress_hooks': [progress_hook],
+                'quiet': True,
+                'cookiefile': 'cookies.txt', 
+                'ignoreerrors': True,
+                'no_warnings': True,  
+                'user_agent': 'Mozilla/5.0 (Linux; Android 10; STK-L22) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Mobile Safari/537.36'
+            }
             if audio_only:
                 ydl_opts['format'] = 'bestaudio/best'
                 ydl_opts['postprocessors'] = [{'key': 'FFmpegExtractAudio', 'preferredcodec': 'mp3', 'preferredquality': '192'}]
@@ -173,19 +145,15 @@ def download_media():
                     'preferedformat': 'mp4',
                 }]
             try:
-                app_logger.info(f"Début du téléchargement pour {task_id} : {url}")
                 with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                     ydl.download([url])
                 files = os.listdir(out_path)
                 if files:
                     filename = files[0]
                     socketio.emit('download_complete', {'task_id': task_id, 'filename': filename, 'download_url': f'/api/get_file/downloads/{task_id}/{filename}'})
-                    app_logger.info(f"Téléchargement terminé : {filename}")
                 else:
                     socketio.emit('download_error', {'task_id': task_id, 'error': 'Fichier introuvable après téléchargement'})
-                    app_logger.error(f"Aucun fichier trouvé dans {out_path}")
             except Exception as e:
-                app_logger.exception(f"Erreur lors du téléchargement {task_id}")
                 socketio.emit('download_error', {'task_id': task_id, 'error': str(e)})
             finally:
                 if task_id in active_downloads:
@@ -237,22 +205,20 @@ def download_subtitles():
     data = request.json
     url = data.get('url','').strip()
     lang = data.get('lang', 'fr')
-    auto = data.get('auto', True)
-    manual = data.get('manual', True)
+    auto = data.get('auto', True)  # whether to include auto-generated subs
+    manual = data.get('manual', True)  # whether to include manual subs
     task_id = str(uuid.uuid4())
     out_path = os.path.join(app.config['DOWNLOAD_FOLDER'], task_id)
     os.makedirs(out_path, exist_ok=True)
-    
-    ydl_opts = YDL_COMMON_OPTS.copy()
-    ydl_opts.update({
+    ydl_opts = {
         'skip_download': True,
         'writesubtitles': manual,
         'writeautomaticsub': auto,
         'subtitleslangs': [lang],
         'subtitlesformat': 'srt',
         'outtmpl': os.path.join(out_path, '%(title)s'),
-    })
-    
+        'quiet': True,
+    }
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
@@ -273,14 +239,12 @@ def download_thumbnail():
     task_id = str(uuid.uuid4())
     out_path = os.path.join(app.config['DOWNLOAD_FOLDER'], task_id)
     os.makedirs(out_path, exist_ok=True)
-    
-    ydl_opts = YDL_COMMON_OPTS.copy()
-    ydl_opts.update({
+    ydl_opts = {
         'skip_download': True,
         'writethumbnail': True,
         'outtmpl': os.path.join(out_path, '%(title)s'),
-    })
-    
+        'quiet': True,
+    }
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
@@ -422,7 +386,7 @@ def write_metadata():
     data = request.json
     input_path = data.get('input_path','')
     tags = data.get('tags', {})
-    cover_file = data.get('cover_file', None)
+    cover_file = data.get('cover_file', None)  # base64 encoded image?
     if not input_path or not os.path.exists(input_path):
         return jsonify({'error': 'Fichier introuvable'}), 400
     task_id = str(uuid.uuid4())
@@ -439,6 +403,7 @@ def write_metadata():
         cover_path = os.path.join(output_path, 'cover.jpg')
         with open(cover_path, 'wb') as f:
             f.write(base64.b64decode(cover_data))
+        # Rebuild with cover: ffmpeg needs -i cover BEFORE -map for proper ID3v2
         meta_args = []
         for k, v in tags.items():
             if v:
@@ -470,7 +435,7 @@ def merge_av():
         return jsonify({'error': 'Vidéo et audio requis'}), 400
     video = request.files['video']
     audio = request.files['audio']
-    option = request.form.get('option', 'shortest')
+    option = request.form.get('option', 'shortest')  # 'shortest', 'loop', 'pad'
     task_id = str(uuid.uuid4())
     up_path = os.path.join(app.config['UPLOAD_FOLDER'], task_id)
     os.makedirs(up_path, exist_ok=True)
@@ -484,9 +449,11 @@ def merge_av():
     if option == 'shortest':
         cmd = ['ffmpeg','-i', vpath,'-i', apath,'-c:v','copy','-c:a','aac','-shortest','-y', out_file]
     elif option == 'loop':
+        # loop audio to match video length
         cmd = ['ffmpeg','-i', vpath,'-stream_loop','-1','-i', apath,'-c:v','copy','-c:a','aac','-shortest','-y', out_file]
     elif option == 'pad':
-        cmd = ['ffmpeg','-i', vpath,'-i', apath,'-c:v','copy','-c:a','aac','-shortest','-y', out_file]
+        # pad video with silence to match audio length
+        cmd = ['ffmpeg','-i', vpath,'-i', apath,'-c:v','copy','-c:a','aac','-shortest','-y', out_file]  # Not exactly pad, but complex
     try:
         result = subprocess.run(cmd, capture_output=True, text=True)
         if result.returncode == 0:
@@ -503,7 +470,8 @@ def compress_image():
     file = request.files['file']
     quality = int(request.form.get('quality', 80))
     target_format = request.form.get('format', 'jpg')
-    effort = request.form.get('effort', '4')
+    # Additional options
+    effort = request.form.get('effort', '4')  # for webp/avif
     task_id = str(uuid.uuid4())
     filename = secure_filename(file.filename)
     up_path = os.path.join(app.config['UPLOAD_FOLDER'], task_id)
@@ -517,9 +485,11 @@ def compress_image():
     out_file = os.path.join(out_path, out_name)
 
     if target_format in ['jpg', 'jpeg']:
+        # JPEG: quality scale 2-31, lower is better quality (2-31)
         q = int((100-quality)/5+1) if quality != 100 else 2
         cmd = ['ffmpeg','-i', input_path,'-q:v', str(q), '-y', out_file]
     elif target_format == 'webp':
+        # webp: quality 0-100, effort 0-6
         cmd = ['ffmpeg','-i', input_path,'-c:v','libwebp','-quality', str(quality), '-compression_level', str(effort), '-y', out_file]
     elif target_format == 'avif':
         cmd = ['ffmpeg','-i', input_path,'-c:v','libaom-av1','-crf', str(40 - int(quality/5)), '-y', out_file]
@@ -554,6 +524,7 @@ def get_file(folder, task_id, filename):
     def remove_file(response):
         try:
             os.remove(path)
+            # Tenter de supprimer le dossier parent s'il est vide
             parent = os.path.dirname(path)
             try:
                 os.rmdir(parent)
@@ -577,6 +548,7 @@ def donate_page():
 def crypto_page():
     return render_template('crypto.html')
     
+    
 @app.route('/ping')
 def ping():
     return "OK", 200
@@ -597,6 +569,7 @@ def clean_old_files():
                         os.remove(filepath)
                 except Exception:
                     pass
+            # Supprimer les sous-dossiers vides
             for d in dirs:
                 try:
                     os.rmdir(os.path.join(root, d))
